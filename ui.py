@@ -41,6 +41,17 @@ class PasswordManagerUI(tk.Tk):
         self.password_entry.delete(0, tk.END)
         self.password_entry.insert(0, password)
 
+        # Copy to clipboard (updated with window focus)
+        self.clipboard_clear()
+        self.clipboard_append(password)
+        self.focus_force()     # Brings the window to front (important on Windows)
+        self.update_idletasks()
+        self.update()
+
+        # Optional confirmation
+        messagebox.showinfo("Copied!", "Password copied to clipboard.")
+
+
     def _add_password(self):
         website = self.website_entry.get()
         email = self.email_entry.get()
