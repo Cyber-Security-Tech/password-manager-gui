@@ -35,16 +35,26 @@ class PasswordLogic:
             self.data_manager.save(website, encrypted_email, encrypted_password)
 
     def search_password(self, website):
-        entry = self.data_manager.load(website)
-        if not entry:
+        entries = self.data_manager.load(website)
+        if not entries:
             return None
 
+        results = []
+
         try:
-            email = self.encryptor.decrypt(entry["email"])
-            password = self.encryptor.decrypt(entry["password"])
-            return email, password
+        # Always work with a list
+            if isinstance(entries, dict):
+                entries = [entries]
+
+            for entry in entries:
+                email = self.encryptor.decrypt(entry["email"])
+                password = self.encryptor.decrypt(entry["password"])
+                results.append((email, password))
         except Exception:
             return None
+
+        return results
+
     def reset_master_password(self):
         # Step 1: Ask for current password
         current_pw = simpledialog.askstring("Reset Password", "Enter current master password:", show="*")

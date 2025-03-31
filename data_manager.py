@@ -12,23 +12,28 @@ class DataManager:
 
     def save(self, website, email, password):
         new_entry = {
-            website: {
-                "email": email,
-                "password": password
-            }
+            "email": email,
+            "password": password
         }
 
         try:
             with open(DATA_FILE, "r") as f:
                 data = json.load(f)
-        except json.JSONDecodeError:
+        except (FileNotFoundError, json.JSONDecodeError):
             data = {}
 
-        data.update(new_entry)
+    # If website already exists, convert to list or append
+        if website in data:
+        # Convert existing single entry to a list if needed
+            if isinstance(data[website], dict):
+                data[website] = [data[website]]
+            data[website].append(new_entry)
+        else:
+            data[website] = [new_entry]
+
         with open(DATA_FILE, "w") as f:
             json.dump(data, f, indent=4)
 
-        print(f"Saved {website} to file.")
 
     def load(self, website):
         try:

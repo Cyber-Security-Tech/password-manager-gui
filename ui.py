@@ -10,16 +10,41 @@ class PasswordManagerUI(tk.Tk):
             messagebox.showwarning(title="Oops", message="Enter a website to search.")
             return
 
-        result = self.logic.search_password(website)
-        if result:
-            email, password = result
-            self.email_entry.delete(0, tk.END)
-            self.email_entry.insert(0, email)
-            self.password_entry.delete(0, tk.END)
-            self.password_entry.insert(0, password)
-            messagebox.showinfo(title="Found", message="Credentials loaded successfully.")
-        else:
+        results = self.logic.search_password(website)
+        if not results:
             messagebox.showerror(title="Not Found", message="No entry found for that website.")
+            return
+
+        if len(results) == 1:
+            email, password = results[0]
+            self._fill_credentials(email, password)
+        else:
+        # Multiple accounts found
+        # Build label options for dropdown (we’ll show emails as identifiers)
+            account_map = {f"{i+1}. {email}": (email, password) for i, (email, password) in enumerate(results)}
+
+        # Update the selector options
+            self.selected_account.set(next(iter(account_map)))  # set to first email
+
+        # Destroy previous dropdown if it exists
+            if self.account_selector:
+                self.account_selector.destroy()
+
+            self.account_selector = tk.OptionMenu(
+                self,
+                self.selected_account,
+                *account_map.keys(),
+                command=lambda selected: self._fill_credentials(*account_map[selected])
+            )
+            self.account_selector.grid(row=8, column=1, columnspan=2, sticky="ew", pady=5)
+            messagebox.showinfo("Multiple Accounts", "Select an account from the dropdown.")
+
+
+    def _fill_credentials(self, email, password):
+        self.email_entry.delete(0, tk.END)
+        self.email_entry.insert(0, email)
+        self.password_entry.delete(0, tk.END)
+        self.password_entry.insert(0, password)
 
 
     def __init__(self):
@@ -27,6 +52,8 @@ class PasswordManagerUI(tk.Tk):
         self.title("Password Manager")
         self.config(padx=50, pady=50)
         self.logic = PasswordLogic()
+        self.account_selector = None  # Will hold the dropdown widget
+        self.selected_account = tk.StringVar()  # Tracks the selected dropdown option
 
         self._build_ui()
 
