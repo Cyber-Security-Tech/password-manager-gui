@@ -1,8 +1,57 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 from password_logic import PasswordLogic
+from login import LoginWindow
 
 class PasswordManagerUI(tk.Tk):
+
+    def __init__(self):
+        super().__init__()
+        self.title("Password Manager")
+        self.config(padx=50, pady=50)
+        self.logic = PasswordLogic()
+        self.account_selector = None
+        self.selected_account = tk.StringVar()
+        self.show_password = tk.BooleanVar(value=False)
+
+        self._build_ui()
+
+    def _build_ui(self):
+        self.canvas = tk.Canvas(width=200, height=200)
+        self.canvas.grid(row=0, column=1)
+
+        # Labels
+        ttk.Label(text="Website:").grid(row=1, column=0)
+        ttk.Label(text="Email/Username:").grid(row=2, column=0)
+        ttk.Label(text="Password:").grid(row=3, column=0)
+
+        # Entries
+        self.website_entry = ttk.Entry(width=35)
+        self.website_entry.grid(row=1, column=1, columnspan=2)
+        self.website_entry.focus()
+
+        self.email_entry = ttk.Entry(width=35)
+        self.email_entry.grid(row=2, column=1, columnspan=2)
+
+        self.password_entry = ttk.Entry(width=35, show="*")
+        self.password_entry.grid(row=3, column=1, columnspan=2)
+
+        # Generate Button
+        ttk.Button(text="Generate", width=10, command=self._generate_password).grid(row=3, column=2)
+
+        ttk.Checkbutton(
+            text="Show Password",
+            variable=self.show_password,
+            command=self._toggle_password_visibility
+        ).grid(row=4, column=1, columnspan=2, sticky="w", pady=(0, 5))
+
+
+        # Buttons
+        ttk.Button(text="Add", width=36, command=self._add_password).grid(row=5, column=1, columnspan=2)
+        ttk.Button(text="Search", width=36, command=self._search_password).grid(row=6, column=1, columnspan=2)
+        ttk.Button(text="Reset Master Password", width=36, command=self._reset_master_password).grid(row=7, column=1, columnspan=2)
+        ttk.Button(text="Delete Entry", width=36, command=self._delete_password).grid(row=8, column=1, columnspan=2)
 
     def _search_password(self):
         website = self.website_entry.get().strip()
@@ -19,14 +68,9 @@ class PasswordManagerUI(tk.Tk):
             email, password = results[0]
             self._fill_credentials(email, password)
         else:
-        # Multiple accounts found
-        # Build label options for dropdown (we’ll show emails as identifiers)
             account_map = {f"{i+1}. {email}": (email, password) for i, (email, password) in enumerate(results)}
+            self.selected_account.set(next(iter(account_map)))
 
-        # Update the selector options
-            self.selected_account.set(next(iter(account_map)))  # set to first email
-
-        # Destroy previous dropdown if it exists
             if self.account_selector:
                 self.account_selector.destroy()
 
@@ -39,51 +83,18 @@ class PasswordManagerUI(tk.Tk):
             self.account_selector.grid(row=8, column=1, columnspan=2, sticky="ew", pady=5)
             messagebox.showinfo("Multiple Accounts", "Select an account from the dropdown.")
 
-
     def _fill_credentials(self, email, password):
         self.email_entry.delete(0, tk.END)
         self.email_entry.insert(0, email)
         self.password_entry.delete(0, tk.END)
         self.password_entry.insert(0, password)
 
+    def _toggle_password_visibility(self):
+        if self.show_password.get():
+            self.password_entry.config(show="")
+        else:
+            self.password_entry.config(show="*")
 
-    def __init__(self):
-        super().__init__()
-        self.title("Password Manager")
-        self.config(padx=50, pady=50)
-        self.logic = PasswordLogic()
-        self.account_selector = None  # Will hold the dropdown widget
-        self.selected_account = tk.StringVar()  # Tracks the selected dropdown option
-
-        self._build_ui()
-
-    def _build_ui(self):
-        # Canvas (optional image/logo space)
-        self.canvas = tk.Canvas(width=200, height=200)
-        self.canvas.grid(row=0, column=1)
-
-        # Labels
-        tk.Label(text="Website:").grid(row=1, column=0)
-        tk.Label(text="Email/Username:").grid(row=2, column=0)
-        tk.Label(text="Password:").grid(row=3, column=0)
-
-        # Entries
-        self.website_entry = tk.Entry(width=35)
-        self.website_entry.grid(row=1, column=1, columnspan=2)
-        self.website_entry.focus()
-
-        self.email_entry = tk.Entry(width=35)
-        self.email_entry.grid(row=2, column=1, columnspan=2)
-
-        self.password_entry = tk.Entry(width=21)
-        self.password_entry.grid(row=3, column=1)
-
-        # Buttons
-        tk.Button(text="Generate", width=10, command=self._generate_password).grid(row=3, column=2)
-        tk.Button(text="Add", width=36, command=self._add_password).grid(row=4, column=1, columnspan=2)
-        tk.Button(text="Search", width=36, command=self._search_password).grid(row=5, column=1, columnspan=2)
-        tk.Button(text="Reset Master Password", width=36, command=self._reset_master_password).grid(row=6, column=1, columnspan=2)
-        tk.Button(text="Delete Entry", width=36, command=self._delete_password).grid(row=7, column=1, columnspan=2)
 
     def _delete_password(self):
         website = self.website_entry.get().strip()
@@ -92,26 +103,21 @@ class PasswordManagerUI(tk.Tk):
         self.password_entry.delete(0, tk.END)
         self.email_entry.delete(0, tk.END)
 
-
     def _reset_master_password(self):
         self.logic.reset_master_password()
-
 
     def _generate_password(self):
         password = self.logic.generate_password()
         self.password_entry.delete(0, tk.END)
         self.password_entry.insert(0, password)
 
-        # Copy to clipboard (updated with window focus)
         self.clipboard_clear()
         self.clipboard_append(password)
-        self.focus_force()     # Brings the window to front (important on Windows)
+        self.focus_force()
         self.update_idletasks()
         self.update()
 
-        # Optional confirmation
         messagebox.showinfo("Copied!", "Password copied to clipboard.")
-
 
     def _add_password(self):
         website = self.website_entry.get()
@@ -120,11 +126,8 @@ class PasswordManagerUI(tk.Tk):
 
         self.logic.save_password(website, email, password)
 
-        # Clear fields only if save was attempted
         self.website_entry.delete(0, tk.END)
         self.password_entry.delete(0, tk.END)
-
-from login import LoginWindow
 
 def start_app():
     app = PasswordManagerUI()
@@ -133,4 +136,3 @@ def start_app():
 if __name__ == "__main__":
     login = LoginWindow(on_success=start_app)
     login.mainloop()
-
