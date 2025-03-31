@@ -3,6 +3,11 @@ import string
 from tkinter import messagebox
 from data_manager import DataManager
 from encryption import Encryptor
+import json
+from tkinter import simpledialog, messagebox
+from werkzeug.security import check_password_hash, generate_password_hash
+
+CONFIG_FILE = "config.json"
 
 class PasswordLogic:
     def __init__(self):
@@ -40,4 +45,44 @@ class PasswordLogic:
             return email, password
         except Exception:
             return None
+    def reset_master_password(self):
+        # Step 1: Ask for current password
+        current_pw = simpledialog.askstring("Reset Password", "Enter current master password:", show="*")
+        if not current_pw:
+            return
+
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                config = json.load(f)
+            stored_hash = config.get("master_password")
+        except (FileNotFoundError, json.JSONDecodeError):
+            messagebox.showerror("Error", "Could not read config file.")
+            return
+
+        # Step 2: Verify old password
+        if not check_password_hash(stored_hash, current_pw):
+            messagebox.showerror("Access Denied", "Incorrect master password.")
+            return
+
+        # Step 3: Ask for new password
+        new_pw = simpledialog.askstring("New Password", "Enter new master password:", show="*")
+        confirm_pw = simpledialog.askstring("Confirm Password", "Re-enter new master password:", show="*")
+
+        if not new_pw or not confirm_pw:
+            return
+
+        if new_pw != confirm_pw:
+            messagebox.showerror("Mismatch", "Passwords do not match.")
+            return
+
+        # Step 4: Update config.json
+        new_hash = generate_password_hash(new_pw)
+        config["master_password"] = new_hash
+
+        try:
+            with open(CONFIG_FILE, "w") as f:
+                json.dump(config, f, indent=4)
+            messagebox.showinfo("Success", "Master password has been reset.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save new password: {e}")
             

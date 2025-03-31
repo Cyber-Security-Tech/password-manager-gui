@@ -55,6 +55,10 @@ class PasswordManagerUI(tk.Tk):
         tk.Button(text="Generate", width=10, command=self._generate_password).grid(row=3, column=2)
         tk.Button(text="Add", width=36, command=self._add_password).grid(row=4, column=1, columnspan=2)
         tk.Button(text="Search", width=36, command=self._search_password).grid(row=5, column=1, columnspan=2)
+        tk.Button(text="Reset Master Password", width=36, command=self._reset_master_password).grid(row=6, column=1, columnspan=2)
+
+    def _reset_master_password(self):
+        self.logic.reset_master_password()
 
 
     def _generate_password(self):
@@ -83,6 +87,14 @@ class PasswordManagerUI(tk.Tk):
         # Clear fields only if save was attempted
         self.website_entry.delete(0, tk.END)
         self.password_entry.delete(0, tk.END)
-if __name__ == "__main__":
+
+from login import LoginWindow
+
+def start_app():
     app = PasswordManagerUI()
     app.mainloop()
+
+if __name__ == "__main__":
+    login = LoginWindow(on_success=start_app)
+    login.mainloop()
+
