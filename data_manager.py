@@ -38,3 +38,23 @@ class DataManager:
         except (FileNotFoundError, json.JSONDecodeError):
                 return None
 
+    def delete(self, website):
+        try:
+            with open(DATA_FILE, "r") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return False  # File or JSON broken
+
+        if website not in data:
+            return False  # Nothing to delete
+
+        del data[website]
+
+        try:
+            with open(DATA_FILE, "w") as f:
+                json.dump(data, f, indent=4)
+            return True
+        except Exception:
+            return False
+
+

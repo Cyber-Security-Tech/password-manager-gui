@@ -85,4 +85,20 @@ class PasswordLogic:
             messagebox.showinfo("Success", "Master password has been reset.")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to save new password: {e}")
+
+    def delete_password(self, website):
+        if not website:
+            messagebox.showwarning("Oops", "Enter a website to delete.")
+            return
+
+        confirm = messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete the entry for '{website}'?")
+        if not confirm:
+            return
+
+        success = self.data_manager.delete(website)
+        if success:
+            messagebox.showinfo("Deleted", f"Entry for '{website}' deleted.")
+        else:
+            messagebox.showerror("Not Found", f"No entry found for '{website}'.")
+
             

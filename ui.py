@@ -56,6 +56,15 @@ class PasswordManagerUI(tk.Tk):
         tk.Button(text="Add", width=36, command=self._add_password).grid(row=4, column=1, columnspan=2)
         tk.Button(text="Search", width=36, command=self._search_password).grid(row=5, column=1, columnspan=2)
         tk.Button(text="Reset Master Password", width=36, command=self._reset_master_password).grid(row=6, column=1, columnspan=2)
+        tk.Button(text="Delete Entry", width=36, command=self._delete_password).grid(row=7, column=1, columnspan=2)
+
+    def _delete_password(self):
+        website = self.website_entry.get().strip()
+        self.logic.delete_password(website)
+        self.website_entry.delete(0, tk.END)
+        self.password_entry.delete(0, tk.END)
+        self.email_entry.delete(0, tk.END)
+
 
     def _reset_master_password(self):
         self.logic.reset_master_password()
