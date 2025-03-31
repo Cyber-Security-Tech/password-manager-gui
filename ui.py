@@ -9,7 +9,7 @@ class PasswordManagerUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Password Manager")
-        self.config(padx=50, pady=50)
+        self.config(padx=50, pady=30)
         self.logic = PasswordLogic()
         self.account_selector = None
         self.selected_account = tk.StringVar()
@@ -18,40 +18,41 @@ class PasswordManagerUI(tk.Tk):
         self._build_ui()
 
     def _build_ui(self):
-        self.canvas = tk.Canvas(width=200, height=200)
-        self.canvas.grid(row=0, column=1)
+        # Optional logo/canvas - reduced size to remove top spacing
+        self.canvas = tk.Canvas(width=100, height=100, highlightthickness=0)
+        self.canvas.grid(row=0, column=1, pady=(0, 20))
 
         # Labels
-        ttk.Label(text="Website:").grid(row=1, column=0)
-        ttk.Label(text="Email/Username:").grid(row=2, column=0)
-        ttk.Label(text="Password:").grid(row=3, column=0)
+        ttk.Label(text="Website:").grid(row=1, column=0, sticky="e", pady=5)
+        ttk.Label(text="Email/Username:").grid(row=2, column=0, sticky="e", pady=5)
+        ttk.Label(text="Password:").grid(row=3, column=0, sticky="e", pady=5)
 
         # Entries
         self.website_entry = ttk.Entry(width=35)
-        self.website_entry.grid(row=1, column=1, columnspan=2)
+        self.website_entry.grid(row=1, column=1, columnspan=2, pady=5)
         self.website_entry.focus()
 
         self.email_entry = ttk.Entry(width=35)
-        self.email_entry.grid(row=2, column=1, columnspan=2)
+        self.email_entry.grid(row=2, column=1, columnspan=2, pady=5)
 
         self.password_entry = ttk.Entry(width=35, show="*")
-        self.password_entry.grid(row=3, column=1, columnspan=2)
+        self.password_entry.grid(row=3, column=1, columnspan=2, pady=5)
 
-        # Generate Button
-        ttk.Button(text="Generate", width=10, command=self._generate_password).grid(row=3, column=2)
-
+        # Show/Hide Checkbox
         ttk.Checkbutton(
             text="Show Password",
             variable=self.show_password,
             command=self._toggle_password_visibility
-        ).grid(row=4, column=1, columnspan=2, sticky="w", pady=(0, 5))
+        ).grid(row=4, column=1, sticky="w", padx=5, pady=(0, 5))
 
+        # Generate Button
+        ttk.Button(text="Generate", width=10, command=self._generate_password).grid(row=4, column=2, sticky="e", padx=5)
 
-        # Buttons
-        ttk.Button(text="Add", width=36, command=self._add_password).grid(row=5, column=1, columnspan=2)
-        ttk.Button(text="Search", width=36, command=self._search_password).grid(row=6, column=1, columnspan=2)
-        ttk.Button(text="Reset Master Password", width=36, command=self._reset_master_password).grid(row=7, column=1, columnspan=2)
-        ttk.Button(text="Delete Entry", width=36, command=self._delete_password).grid(row=8, column=1, columnspan=2)
+        # Main Buttons
+        ttk.Button(text="Add", width=36, command=self._add_password).grid(row=5, column=1, columnspan=2, pady=5)
+        ttk.Button(text="Search", width=36, command=self._search_password).grid(row=6, column=1, columnspan=2, pady=5)
+        ttk.Button(text="Reset Master Password", width=36, command=self._reset_master_password).grid(row=7, column=1, columnspan=2, pady=5)
+        ttk.Button(text="Delete Entry", width=36, command=self._delete_password).grid(row=8, column=1, columnspan=2, pady=5)
 
     def _search_password(self):
         website = self.website_entry.get().strip()
@@ -80,7 +81,7 @@ class PasswordManagerUI(tk.Tk):
                 *account_map.keys(),
                 command=lambda selected: self._fill_credentials(*account_map[selected])
             )
-            self.account_selector.grid(row=8, column=1, columnspan=2, sticky="ew", pady=5)
+            self.account_selector.grid(row=9, column=1, columnspan=2, sticky="ew", pady=5)
             messagebox.showinfo("Multiple Accounts", "Select an account from the dropdown.")
 
     def _fill_credentials(self, email, password):
@@ -94,7 +95,6 @@ class PasswordManagerUI(tk.Tk):
             self.password_entry.config(show="")
         else:
             self.password_entry.config(show="*")
-
 
     def _delete_password(self):
         website = self.website_entry.get().strip()
@@ -136,3 +136,4 @@ def start_app():
 if __name__ == "__main__":
     login = LoginWindow(on_success=start_app)
     login.mainloop()
+
