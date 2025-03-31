@@ -29,3 +29,12 @@ class DataManager:
             json.dump(data, f, indent=4)
 
         print(f"Saved {website} to file.")
+
+    def load(self, website):
+        try:
+             with open(DATA_FILE, "r") as f:
+                data = json.load(f)
+             return data.get(website)
+        except (FileNotFoundError, json.JSONDecodeError):
+                return None
+

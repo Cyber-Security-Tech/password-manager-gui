@@ -28,3 +28,16 @@ class PasswordLogic:
             encrypted_email = self.encryptor.encrypt(email)
             encrypted_password = self.encryptor.encrypt(password)
             self.data_manager.save(website, encrypted_email, encrypted_password)
+
+    def search_password(self, website):
+        entry = self.data_manager.load(website)
+        if not entry:
+            return None
+
+        try:
+            email = self.encryptor.decrypt(entry["email"])
+            password = self.encryptor.decrypt(entry["password"])
+            return email, password
+        except Exception:
+            return None
+            

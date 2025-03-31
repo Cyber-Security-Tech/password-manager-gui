@@ -3,6 +3,25 @@ from tkinter import messagebox
 from password_logic import PasswordLogic
 
 class PasswordManagerUI(tk.Tk):
+
+    def _search_password(self):
+        website = self.website_entry.get().strip()
+        if not website:
+            messagebox.showwarning(title="Oops", message="Enter a website to search.")
+            return
+
+        result = self.logic.search_password(website)
+        if result:
+            email, password = result
+            self.email_entry.delete(0, tk.END)
+            self.email_entry.insert(0, email)
+            self.password_entry.delete(0, tk.END)
+            self.password_entry.insert(0, password)
+            messagebox.showinfo(title="Found", message="Credentials loaded successfully.")
+        else:
+            messagebox.showerror(title="Not Found", message="No entry found for that website.")
+
+
     def __init__(self):
         super().__init__()
         self.title("Password Manager")
@@ -35,6 +54,8 @@ class PasswordManagerUI(tk.Tk):
         # Buttons
         tk.Button(text="Generate", width=10, command=self._generate_password).grid(row=3, column=2)
         tk.Button(text="Add", width=36, command=self._add_password).grid(row=4, column=1, columnspan=2)
+        tk.Button(text="Search", width=36, command=self._search_password).grid(row=5, column=1, columnspan=2)
+
 
     def _generate_password(self):
         password = self.logic.generate_password()
