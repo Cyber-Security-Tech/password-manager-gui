@@ -1,25 +1,47 @@
+"""
+password_logic.py – Business logic layer for the Password Manager.
+
+Handles:
+- Password generation
+- Input validation
+- AES encryption/decryption of stored credentials
+- Master password verification and reset using hashed passwords
+- Interface to DataManager for saving/loading entries
+"""
+
 import random
 import string
-from tkinter import messagebox
+import json
+from tkinter import messagebox, simpledialog
+from werkzeug.security import check_password_hash, generate_password_hash
+
 from data_manager import DataManager
 from encryption import Encryptor
-import json
-from tkinter import simpledialog, messagebox
-from werkzeug.security import check_password_hash, generate_password_hash
 
 CONFIG_FILE = "config.json"
 
 class PasswordLogic:
+    """
+    Encapsulates all password manager operations, including encryption,
+    password generation, storage, retrieval, and master password reset.
+    """
+
     def __init__(self):
         self.data_manager = DataManager()
         self.encryptor = Encryptor()
 
     def generate_password(self, length=12) -> str:
+        """
+        Generates a secure random password with letters, digits, and symbols.
+        """
         characters = string.ascii_letters + string.digits + string.punctuation
         password = ''.join(random.choices(characters, k=length))
         return password
 
     def save_password(self, website, email, password):
+        """
+        Validates inputs, encrypts credentials, and saves them via DataManager.
+        """
         if not website or not email or not password:
             messagebox.showwarning(title="Oops", message="Please don’t leave any fields empty!")
             return
@@ -35,14 +57,16 @@ class PasswordLogic:
             self.data_manager.save(website, encrypted_email, encrypted_password)
 
     def search_password(self, website):
+        """
+        Loads and decrypts saved credentials for a given website.
+        Returns a list of (email, password) tuples or None if not found.
+        """
         entries = self.data_manager.load(website)
         if not entries:
             return None
 
         results = []
-
         try:
-        # Always work with a list
             if isinstance(entries, dict):
                 entries = [entries]
 
@@ -56,7 +80,10 @@ class PasswordLogic:
         return results
 
     def reset_master_password(self):
-        # Step 1: Ask for current password
+        """
+        Securely resets the master password by verifying the old one
+        and storing a hashed version of the new one.
+        """
         current_pw = simpledialog.askstring("Reset Password", "Enter current master password:", show="*")
         if not current_pw:
             return
@@ -69,12 +96,12 @@ class PasswordLogic:
             messagebox.showerror("Error", "Could not read config file.")
             return
 
-        # Step 2: Verify old password
+        # Verify old master password
         if not check_password_hash(stored_hash, current_pw):
             messagebox.showerror("Access Denied", "Incorrect master password.")
             return
 
-        # Step 3: Ask for new password
+        # Get and confirm new master password
         new_pw = simpledialog.askstring("New Password", "Enter new master password:", show="*")
         confirm_pw = simpledialog.askstring("Confirm Password", "Re-enter new master password:", show="*")
 
@@ -85,7 +112,7 @@ class PasswordLogic:
             messagebox.showerror("Mismatch", "Passwords do not match.")
             return
 
-        # Step 4: Update config.json
+        # Hash and store the new master password
         new_hash = generate_password_hash(new_pw)
         config["master_password"] = new_hash
 
@@ -97,6 +124,9 @@ class PasswordLogic:
             messagebox.showerror("Error", f"Failed to save new password: {e}")
 
     def delete_password(self, website):
+        """
+        Confirms and deletes saved credentials for a given website.
+        """
         if not website:
             messagebox.showwarning("Oops", "Enter a website to delete.")
             return
@@ -110,5 +140,3 @@ class PasswordLogic:
             messagebox.showinfo("Deleted", f"Entry for '{website}' deleted.")
         else:
             messagebox.showerror("Not Found", f"No entry found for '{website}'.")
-
-            

@@ -1,7 +1,20 @@
+# Byte-compiled / cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.vscode/
+*.py[cod]
+
+# Environment files (if added later)
 .env
+venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# App data (if it contains sensitive info)
 data/passwords.json
+
+# Legacy file (use JSON now)
+data.txt
+
+# Config file (contains master password hash)
+config.json
